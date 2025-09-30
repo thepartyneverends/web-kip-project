@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список сотрудников</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 1.5rem 1.5rem !important;
+        }
+        .table {
+            font-size: 1rem;
+        }
+        .table th {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+        .badge-role {
+            font-size: 0.9rem;
+            padding: 0.5em 0.8em;
+        }
+        .btn-action {
+            margin: 2px;
+            min-width: 80px;
+        }
+        .inactive-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 2rem;
+            padding: 1.5rem;
+        }
+        .inactive-header {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .inactive-table {
+            background-color: #f8f9fa;
+        }
+        .inactive-table tbody tr {
+            opacity: 0.7;
+        }
+        .phone-link {
+            color: inherit;
+            text-decoration: none;
+        }
+        .phone-link:hover {
+            color: #0d6efd;
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            .btn-action {
+                min-width: 60px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Хлебные крошки -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-1"></i>Главная</a></li>
+                        <li class="breadcrumb-item active">Список сотрудников</li>
+                    </ol>
+                </nav>
+
+                <div class="table-container shadow">
+                    <!-- Заголовок с увеличенными отступами -->
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center table-header">
+                        <h5 class="card-title mb-0" style="font-size: 1.3rem;">
+                            <i class="fas fa-users me-2 text-primary"></i>Список сотрудников
+                        </h5>
+                        <div class="btn-group">
+                            <a href="/" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>На главную
+                            </a>
+                            <a href="/register-kip" class="btn btn-success btn-sm">
+                                <i class="fas fa-user-plus me-1"></i>Добавить сотрудника
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col" width="80">ID</th>
+                                        <th scope="col">ФИО сотрудника</th>
+                                        <th scope="col">Должность</th>
+                                        <th scope="col">Номер телефона</th>
+                                        <th scope="col" width="100">Статус</th>
+                                        <th scope="col" width="120">Редактировать</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for user in users if user.active %}
+                                    <tr>
+                                        <td><strong>#{{ user.id }}</strong></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                     style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                                    {{ user.full_name.split(' ')[0][0] }}{{ user.full_name.split(' ')[1][0] if user.full_name.split(' ')|length > 1 else '' }}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold">{{ user.full_name }}</div>
+                                                    <small class="text-muted">ID: {{ user.id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if user.role == 'мастер' %}
+                                                <span class="badge bg-warning text-dark badge-role">
+                                                    <i class="fas fa-crown me-1"></i>{{ user.role }}
+                                                </span>
+                                            {% elif user.role == 'кип' %}
+                                                <span class="badge bg-info text-white badge-role">
+                                                    <i class="fas fa-tools me-1"></i>{{ user.role }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary badge-role">{{ user.role }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.phone_number %}
+                                                <a href="tel:{{ user.phone_number }}" class="phone-link">
+                                                    <i class="fas fa-phone me-1"></i>{{ user.phone_number }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Не указан</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.active %}
+                                                <span class="badge bg-success badge-role">
+                                                    <i class="fas fa-check-circle me-1"></i>Активен
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger badge-role">
+                                                    <i class="fas fa-times-circle me-1"></i>Нет
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm w-100">
+                                                <a class="btn btn-outline-primary btn-action"
+                                                   href="/edit-user/{{ user.id }}"
+                                                   title="Редактировать">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted" style="font-size: 1.1rem;">Нет активных сотрудников</p>
+                                            <a href="/register-kip" class="btn btn-primary">
+                                                <i class="fas fa-user-plus me-2"></i>Добавить первого сотрудника
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Пагинация -->
+                    {% if users|selectattr('active')|list|length > 10 %}
+                    <div class="card-footer bg-white">
+                        <nav aria-label="Навигация по страницам">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">
+                                        <i class="fas fa-chevron-left me-1"></i>Предыдущая
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">
+                                        Следующая<i class="fas fa-chevron-right ms-1"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+
+                    <!-- Статистика -->
+                    <div class="card-footer bg-light">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <small class="text-muted">Всего сотрудников: <strong>{{ users|length }}</strong></small>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Активных: <strong>{{ users|selectattr('active')|list|length }}</strong></small>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Мастеров: <strong>{{ users|selectattr('role', 'equalto', 'мастер')|selectattr('active')|list|length }}</strong></small>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Слесарей КИПиА: <strong>{{ users|selectattr('role', 'equalto', 'кип')|selectattr('active')|list|length }}</strong></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Секция неактивных пользователей -->
+                {% set inactive_users = users|rejectattr('active')|list %}
+                {% if inactive_users %}
+                <div class="inactive-section shadow mt-4">
+                    <div class="inactive-header">
+                        <h5 class="mb-0 text-muted">
+                            <i class="fas fa-user-slash me-2"></i>Неактивные сотрудники
+                        </h5>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover inactive-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" width="80">ID</th>
+                                    <th scope="col">ФИО сотрудника</th>
+                                    <th scope="col">Должность</th>
+                                    <th scope="col">Номер телефона</th>
+                                    <th scope="col" width="120">Редактировать</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in inactive_users %}
+                                <tr>
+                                    <td><strong>#{{ user.id }}</strong></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-placeholder bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                                {{ user.full_name.split(' ')[0][0] }}{{ user.full_name.split(' ')[1][0] if user.full_name.split(' ')|length > 1 else '' }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-muted">{{ user.full_name }}</div>
+                                                <small class="text-muted">ID: {{ user.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if user.role == 'мастер' %}
+                                            <span class="badge bg-warning text-dark badge-role">
+                                                <i class="fas fa-crown me-1"></i>{{ user.role }}
+                                            </span>
+                                        {% elif user.role == 'кип' %}
+                                            <span class="badge bg-info text-white badge-role">
+                                                <i class="fas fa-tools me-1"></i>{{ user.role }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary badge-role">{{ user.role }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.phone_number %}
+                                            <a href="tel:{{ user.phone_number }}" class="phone-link">
+                                                <i class="fas fa-phone me-1"></i>{{ user.phone_number }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">Не указан</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm w-100">
+                                            <a class="btn btn-outline-primary btn-action"
+                                               href="/edit-user/{{ user.id }}"
+                                               title="Редактировать">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Подсветка строки при наведении
+        document.addEventListener('DOMContentLoaded', function() {
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f8f9fa';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
+            });
+
+            // Подтверждение действий
+            const actionButtons = document.querySelectorAll('a[href*="/deactivate-user/"], a[href*="/activate-user/"], a[href*="/delete-user/"]');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    let action = '';
+                    if (this.href.includes('/deactivate-user/')) {
+                        action = 'деактивировать';
+                    } else if (this.href.includes('/activate-user/')) {
+                        action = 'активировать';
+                    } else {
+                        action = 'удалить';
+                    }
+
+                    const userName = this.closest('tr').querySelector('.fw-bold').textContent;
+                    if (!confirm(`Вы уверены, что хотите ${action} сотрудника ${userName}?`)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование сотрудника</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px 15px 0 0;
+        }
+        .required-label::after {
+            content: " *";
+            color: #dc3545;
+        }
+        .form-section {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .status-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 0.5em 1em;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-1"></i>Главная</a></li>
+                <li class="breadcrumb-item"><a href="/users" class="text-decoration-none">Список сотрудников</a></li>
+                <li class="breadcrumb-item active">Редактирование сотрудника</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card form-card">
+                    <div class="card-header form-header text-white py-3">
+                        <h3 class="card-title mb-0"><i class="fas fa-user-edit me-2"></i>Редактирование сотрудника</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="/user-update/{{ user.id }}" method="post">
+                            <!-- Основная информация -->
+                            <div class="form-section">
+                                <h5 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Основная информация</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="full_name" class="form-label required-label">ФИО</label>
+                                        <input type="text" class="form-control" id="full_name" name="full_name" required
+                                        value="{{ user.full_name or '' }}" placeholder="Введите полное имя">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="phone_number" class="form-label required-label">Моб. телефон</label>
+                                        <input type="tel" class="form-control" id="phone_number" name="phone_number" required
+                                        value="{{ user.phone_number or '' }}" placeholder="+7 (XXX) XXX-XX-XX">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label required-label">Активен</label>
+    <!-- Скрытое поле со значением false -->
+                                        <input type="hidden" name="active" value="false">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="active" name="active"
+                                                   value="true" {% if user.active %}checked{% endif %} style="transform: scale(1.2);">
+                                            <label class="form-check-label fw-bold ms-2" for="active">
+                                                {% if user.active %}
+                                                <span class="text-success">Активен</span>
+                                                {% else %}
+                                                <span class="text-danger">Неактивен</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label required-label">Роль</label>
+                                        <div class="form-control bg-light">
+                                            {% if user.role == 'мастер' %}
+                                                <span class="badge bg-warning text-dark status-badge">
+                                                    <i class="fas fa-crown me-1"></i>Мастер
+                                                </span>
+                                            {% elif user.role == 'кип' %}
+                                                <span class="badge bg-info text-white status-badge">
+                                                    <i class="fas fa-tools me-1"></i>Слесарь КИПиА
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary status-badge">{{ user.role }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Кнопки действий -->
+                            <div class="row mt-4">
+                                <div class="col-12 d-flex justify-content-between">
+                                    <a href="/users" class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-arrow-left me-2"></i>Назад к списку
+                                    </a>
+                                    <div>
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-save me-2"></i>Сохранить изменения
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Динамическое обновление текста статуса при переключении чекбокса
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('active');
+            const statusLabel = checkbox.nextElementSibling;
+
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    statusLabel.innerHTML = '<span class="text-success">Активен</span>';
+                } else {
+                    statusLabel.innerHTML = '<span class="text-danger">Неактивен</span>';
+                }
+            });
+
+            // Маска для телефона
+            const phoneInput = document.getElementById('phone_number');
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.startsWith('7') || value.startsWith('8')) {
+                    value = value.substring(1);
+                }
+                if (value.length > 0) {
+                    value = '+7 (' + value;
+                    if (value.length > 7) value = value.substring(0, 7) + ') ' + value.substring(7);
+                    if (value.length > 12) value = value.substring(0, 12) + '-' + value.substring(12);
+                    if (value.length > 15) value = value.substring(0, 15) + '-' + value.substring(15);
+                }
+                e.target.value = value;
+            });
+        });
+    </script>
+</body>
+</html>

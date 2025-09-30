@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление датчика</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px 15px 0 0;
+        }
+        .required-label::after {
+            content: " *";
+            color: #dc3545;
+        }
+        .form-section {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-1"></i>Главная</a></li>
+                <li class="breadcrumb-item active">Добавление датчика</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card form-card">
+                    <div class="card-header form-header text-white py-3">
+                        <h3 class="card-title mb-0"><i class="fas fa-plus-circle me-2"></i>Добавление нового датчика</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="/submit-form/" method="post">
+                            <!-- Основная информация -->
+                            <div class="form-section">
+                                <h5 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Основная информация</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="title" class="form-label required-label">Наименование датчика</label>
+                                        <input type="text" class="form-control" id="title" name="title" required
+                                               placeholder="Например: Температура хранилища №6">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="tag" class="form-label required-label">Тэг оборудования</label>
+                                        <input type="text" class="form-control" id="tag" name="tag" required
+                                               placeholder="Например: FT-101">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="device" class="form-label required-label">Модель прибора</label>
+                                        <input type="text" class="form-control" id="device" name="device" required
+                                               placeholder="Например: ОВЕН ДТС035-Л.PT100">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="system" class="form-label required-label">Технологическая система</label>
+                                        <input type="text" class="form-control" id="system" name="system" required
+                                               placeholder="Например: Резервуарный парк">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Технические характеристики -->
+                            <div class="form-section">
+                                <h5 class="text-primary mb-3"><i class="fas fa-cog me-2"></i>Технические характеристики</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="view" class="form-label required-label">Вид сигнала</label>
+                                        <input list="signal_views" class="form-control" id="view" name="view" required
+                                               placeholder="Выберите вид сигнала">
+                                        <datalist id="signal_views">
+                                            <option value="AI">AI - Аналоговый вход</option>
+                                            <option value="DI">DI - Дискретный вход</option>
+                                            <option value="AO">AO - Аналоговый выход</option>
+                                            <option value="DO">DO - Дискретный выход</option>
+                                            <option value="PI">PI - Импульсный вход</option>
+                                            <option value="RTD">RTD - Термосопротивление</option>
+                                            <option value="TC">TC - Термопара</option>
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="type" class="form-label required-label">Тип датчика</label>
+                                        <input type="text" class="form-control" id="type" name="type" required
+                                               placeholder="Например: 4-20mA">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="measure_unit" class="form-label required-label">Единица измерения</label>
+                                        <input list="measure_units" class="form-control" id="measure_unit" name="measure_unit" required
+                                               placeholder="Выберите единицу измерения">
+                                        <datalist id="measure_units">
+                                            <option value="м3/ч">м3/ч - Кубические метры в час</option>
+                                            <option value="м3">м3 - Кубические метры</option>
+                                            <option value="кг/с">кг/с - Килограммы в секунду</option>
+                                            <option value="т/ч">т/ч - Тонны в час</option>
+                                            <option value="л/мин">л/мин - Литрs в минуту</option>
+                                            <option value="МПа">МПа - Мегапаскаль</option>
+                                            <option value="кПа">кПа - Килопаскаль</option>
+                                            <option value="°C">°C - Градусы Цельсия</option>
+                                            <option value="%">% - Проценты</option>
+                                            <option value="ppm">ppm - Частей на миллион</option>
+                                            <option value="мА">мА - Миллиампер</option>
+                                            <option value="В">В - Вольт</option>
+                                            <option value="кВт">кВт - Киловатт</option>
+                                            <option value="МВт">МВт - Мегаватт</option>
+                                            <option value="мм">мм - Миллиметры</option>
+                                            <option value="м">м - Метры</option>
+                                            <option value="кг">кг - Килограммы</option>
+                                        </datalist>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Диапазон измерений -->
+                            <div class="form-section">
+                                <h5 class="text-primary mb-3"><i class="fas fa-ruler-combined me-2"></i>Диапазон измерений</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="min" class="form-label required-label">Минимальное значение</label>
+                                        <input type="number" step="any" class="form-control" id="min" name="min" required
+                                               placeholder="0.0">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="max" class="form-label required-label">Максимальное значение</label>
+                                        <input type="number" step="any" class="form-control" id="max" name="max" required
+                                               placeholder="100.0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Пороги срабатывания -->
+                            <div class="form-section">
+                                <h5 class="text-primary mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Пороги срабатывания</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label for="low_low" class="form-label">Нижний крит. порог (LL)</label>
+                                        <input type="number" step="any" class="form-control" id="low_low" name="low_low"
+                                               placeholder="Минимальное значение">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="low" class="form-label">Нижний аварийный порог (L)</label>
+                                        <input type="number" step="any" class="form-control" id="low" name="low"
+                                               placeholder="Нижний предел">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="high" class="form-label">Верхний аварийный порог (H)</label>
+                                        <input type="number" step="any" class="form-control" id="high" name="high"
+                                               placeholder="Верхний предел">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="high_high" class="form-label">Верхний крит. порог (HH)</label>
+                                        <input type="number" step="any" class="form-control" id="high_high" name="high_high"
+                                               placeholder="Максимальное значение">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Дополнительная информация -->
+                            <div class="form-section">
+                                <h5 class="text-primary mb-3"><i class="fas fa-file-alt me-2"></i>Дополнительная информация</h5>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="description" class="form-label">Описание действия</label>
+                                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="verification_date" class="form-label">Дата очередной поверки</label>
+                                        <input type="date" class="form-control" id="verification_date" name="verification_date"
+                                               value="{{ default_verification_date }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопки отправки -->
+                            <div class="row mt-4">
+                                <div class="col-12 d-flex justify-content-between">
+                                    <a href="/" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Назад
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>Добавить датчик
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Автоматическая валидация формы
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('input[required]');
+
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    }
+                });
+            });
+
+            // Автозаполнение даты поверки (если не установлена)
+            const verificationDateInput = document.getElementById('verification_date');
+            if (!verificationDateInput.value) {
+                const today = new Date();
+                const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+                verificationDateInput.value = nextYear.toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>
