@@ -54,6 +54,17 @@
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
         }
+        /* Стили для поиска */
+        .search-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .search-highlight {
+            background-color: #fff3cd;
+            font-weight: bold;
+        }
         @media (max-width: 768px) {
             .table-responsive {
                 font-size: 0.9rem;
@@ -121,13 +132,13 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-6 col-sm-6">  <!-- Увеличена ширина колонки -->
+                            <div class="col-md-6 col-sm-6">
                                 <a href="/register-kip/" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 master-btn">
                                     <i class="fas fa-user-plus mb-2"></i>
                                     <span>Добавить слесаря КИПиА</span>
                                 </a>
                             </div>
-                            <div class="col-md-6 col-sm-6">  <!-- Увеличена ширина колонки -->
+                            <div class="col-md-6 col-sm-6">
                                 <a href="/users/" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 master-btn">
                                     <i class="fas fa-users mb-2"></i>
                                     <span>Список сотрудников</span>
@@ -143,133 +154,278 @@
         {% endif %}
 
         {% if is_authenticated %}
-        <!-- Таблица датчиков -->
-        <div class="row">
-            <div class="col-12">
-                <div class="table-container shadow">
-                    <!-- Увеличенные отступы в заголовке таблицы -->
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center table-header">
-                        <h5 class="card-title mb-0" style="font-size: 1.3rem;">
-                            <i class="fas fa-table me-2 text-primary"></i>Реестр датчиков и приборов
-                        </h5>
-                        <span class="badge bg-primary" style="font-size: 1.1rem; padding: 0.6em 1em;">{{ gauges|length }} приборов</span>
+        <!-- Поиск по наименованию -->
+        <!-- Форма поиска -->
+<!-- Поиск по наименованию -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="search-box">
+            <form method="GET" action="/" class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label for="search" class="form-label fw-bold">Поиск датчика по наименованию</label>
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control form-control-lg"
+                               id="search"
+                               name="search"
+                               value="{{ search_query or '' }}"
+                               placeholder="Введите наименование датчика для поиска..."
+                               style="font-size: 1.1rem;">
+                        <button class="btn btn-primary btn-lg" type="submit">
+                            <i class="fas fa-search me-2"></i>Найти
+                        </button>
+                        {% if search_query %}
+                        <a href="/" class="btn btn-outline-secondary btn-lg" title="Сбросить поиск">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
                     </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col" width="50">#</th>
-                                    <th scope="col">Тэг</th>
-                                    <th scope="col">Прибор</th>
-                                    <th scope="col">Наименование</th>
-                                    <th scope="col">Вид</th>
-                                    <th scope="col">Тип</th>
-                                    <th scope="col">Диапазон</th>
-                                    <th scope="col">Ед. изм.</th>
-                                    <th scope="col">Пороги</th>
-                                    <th scope="col">Система</th>
-                                    <th scope="col">Дата установки</th>
-                                    <th scope="col">Дата очередной поверки</th>
-                                    <th scope="col">Добавил</th>
-                                    {% if role == 'мастер' %}
-                                    <th scope="col" width="120">Действия</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for gauge in gauges %}
-                                <tr>
-                                    <td><strong>{{ gauge.id }}</strong></td>
-                                    <td>
-                                        <span class="badge bg-secondary" style="font-size: 0.9rem;">{{ gauge.tag }}</span>
-                                    </td>
-                                    <td>{{ gauge.device }}</td>
-                                    <td>
-                                        <div class="fw-bold">{{ gauge.title }}</div>
-                                        {% if gauge.description %}
-                                        <small class="text-muted">{{ gauge.description[:50] }}{% if gauge.description|length > 50 %}...{% endif %}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ gauge.view }}</td>
-                                    <td>{{ gauge.type }}</td>
-                                    <td>
-                                        <small>{{ gauge.min }}...{{ gauge.max }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark" style="font-size: 0.9rem;">{{ gauge.measure_unit }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="small" style="font-size: 0.9rem;">
-                                            <div>LL: {{ gauge.low_low }}</div>
-                                            <div>L: {{ gauge.low }}</div>
-                                            <div>H: {{ gauge.high }}</div>
-                                            <div>HH: {{ gauge.high_high }}</div>
-                                        </div>
-                                    </td>
-                                    <td>{{ gauge.system }}</td>
-                                    <td>
-                                        <small>{{ gauge.created_at }}</small>
-                                    </td>
-                                    <td>
-                                        {{ gauge.verification_date }}
-                                    </td>
-                                    <td>
-                                        <small>{{ user_names[gauge.by_user] }}</small>
-                                    </td>
-                                    {% if role == 'мастер' %}
-                                    <td>
-                                        <div class="btn-group-vertical btn-group-sm w-100">
-                                            <a class="btn btn-outline-primary btn-action"
-                                               href="/edit-gauge/{{ gauge.id }}"
-                                               title="Редактировать"
-                                               style="font-size: 0.9rem;">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a class="btn btn-outline-danger btn-action"
-                                               href="/delete-form/{{ gauge.id }}"
-                                               title="Удалить"
-                                               style="font-size: 0.9rem;">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                    {% endif %}
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="{% if role == 'мастер' %}14{% else %}13{% endif %}" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-3x text-muted mb-2"></i>
-                                        <p class="text-muted" style="font-size: 1.1rem;">Нет добавленных приборов</p>
-                                        <a href="/form" class="btn btn-primary" style="font-size: 1.1rem;">Добавить первый прибор</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="form-text">
+                        {% if search_query %}
+                        <i class="fas fa-info-circle me-1"></i>Показаны только найденные приборы
+                        {% else %}
+                        <i class="fas fa-info-circle me-1"></i>Введите наименование для поиска конкретных приборов
+                        {% endif %}
                     </div>
-
-                    <!-- Пагинация (если нужно) -->
-                    {% if gauges|length > 10 %}
-                    <div class="card-footer bg-white">
-                        <nav aria-label="Навигация по страницам">
-                            <ul class="pagination justify-content-center mb-0">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" tabindex="-1">Предыдущая</a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Следующая</a>
-                                </li>
-                            </ul>
-                        </nav>
+                </div>
+                <div class="col-md-4">
+                    {% if search_query %}
+                    <div class="alert alert-info mb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-filter me-2"></i>
+                                <strong>Активный поиск:</strong> "{{ search_query }}"
+                            </div>
+                            <a href="/" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-times me-1"></i>Сбросить
+                            </a>
+                        </div>
+                        <hr class="my-2">
+                        <div class="small">
+                            Найдено приборов: <strong>{{ total_count }}</strong>
+                        </div>
                     </div>
                     {% endif %}
                 </div>
-            </div>
+            </form>
         </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search');
+    const searchButton = document.getElementById('searchButton');
+
+    function performSearch() {
+        const searchValue = searchInput.value.trim();
+
+        if (searchValue) {
+            // Используем URL с параметром search
+            const url = new URL('/gauges', window.location.origin);
+            url.searchParams.set('search', searchValue);
+            window.location.href = url.toString();
+        } else {
+            window.location.href = '/';
+        }
+    }
+
+    if (searchButton && searchInput) {
+        searchButton.addEventListener('click', performSearch);
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+    }
+});
+</script>
+
+        <!-- Таблица датчиков -->
+        <!-- Таблица датчиков -->
+<div class="row">
+    <div class="col-12">
+        <div class="table-container shadow">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center table-header">
+                <h5 class="card-title mb-0" style="font-size: 1.3rem;">
+                    <i class="fas fa-table me-2 text-primary"></i>
+                    {% if search_query %}
+                    Результаты поиска
+                    {% else %}
+                    Реестр датчиков и приборов
+                    {% endif %}
+                </h5>
+                <span class="badge bg-primary" style="font-size: 1.1rem; padding: 0.6em 1em;">
+                    {{ total_count }} приборов
+                    {% if search_query %}
+                    по запросу "{{ search_query }}"
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col" width="50">#</th>
+                            <th scope="col">Тэг</th>
+                            <th scope="col">Прибор</th>
+                            <th scope="col">Наименование</th>
+                            <th scope="col">Вид</th>
+                            <th scope="col">Тип</th>
+                            <th scope="col">Диапазон</th>
+                            <th scope="col">Ед. изм.</th>
+                            <th scope="col">Пороги</th>
+                            <th scope="col">Система</th>
+                            <th scope="col">Дата установки</th>
+                            <th scope="col">Дата очередной поверки</th>
+                            <th scope="col">Добавил</th>
+                            {% if role == 'мастер' %}
+                            <th scope="col" width="120">Действия</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gauge in gauges %}
+                        <tr>
+                            <td><strong>{{ gauge.id }}</strong></td>
+                            <td>
+                                <span class="badge bg-secondary" style="font-size: 0.9rem;">{{ gauge.tag }}</span>
+                            </td>
+                            <td>{{ gauge.device }}</td>
+                            <td>
+                                <div class="fw-bold">{{ gauge.title }}</div>
+                                {% if gauge.description %}
+                                <small class="text-muted">{{ gauge.description[:50] }}{% if gauge.description|length > 50 %}...{% endif %}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ gauge.view }}</td>
+                            <td>{{ gauge.type }}</td>
+                            <td>
+                                <small>{{ gauge.min }}...{{ gauge.max }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark" style="font-size: 0.9rem;">{{ gauge.measure_unit }}</span>
+                            </td>
+                            <td>
+                                <div class="small" style="font-size: 0.9rem;">
+                                    <div>LL: {{ gauge.low_low }}</div>
+                                    <div>L: {{ gauge.low }}</div>
+                                    <div>H: {{ gauge.high }}</div>
+                                    <div>HH: {{ gauge.high_high }}</div>
+                                </div>
+                            </td>
+                            <td>{{ gauge.system }}</td>
+                            <td>
+                                <small>{{ gauge.created_at.strftime('%d.%m.%Y') if gauge.created_at else '' }}</small>
+                            </td>
+                            <td>
+                                {{ gauge.verification_date.strftime('%d.%m.%Y') if gauge.verification_date else '' }}
+                            </td>
+                            <td>
+                                <small>{{ user_names.get(gauge.by_user, 'Неизвестно') }}</small>
+                            </td>
+                            {% if role == 'мастер' %}
+                            <td>
+                                <div class="btn-group-vertical btn-group-sm w-100">
+                                    <a class="btn btn-outline-primary btn-action"
+                                       href="/edit-gauge/{{ gauge.id }}"
+                                       title="Редактировать"
+                                       style="font-size: 0.9rem;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a class="btn btn-outline-danger btn-action"
+                                       href="/delete-form/{{ gauge.id }}"
+                                       title="Удалить"
+                                       style="font-size: 0.9rem;">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="{% if role == 'мастер' %}14{% else %}13{% endif %}" class="text-center py-4">
+                                {% if search_query %}
+                                <i class="fas fa-search fa-3x text-muted mb-2"></i>
+                                <p class="text-muted" style="font-size: 1.1rem;">Приборы с наименованием "{{ search_query }}" не найдены</p>
+                                <a href="/" class="btn btn-primary" style="font-size: 1.1rem;">
+                                    <i class="fas fa-arrow-left me-2"></i>Вернуться ко всем приборам
+                                </a>
+                                {% else %}
+                                <i class="fas fa-inbox fa-3x text-muted mb-2"></i>
+                                <p class="text-muted" style="font-size: 1.1rem;">Нет добавленных приборов</p>
+                                <a href="/form" class="btn btn-primary" style="font-size: 1.1rem;">
+                                    <i class="fas fa-plus me-2"></i>Добавить первый прибор
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if total_pages > 1 %}
+            <div class="card-footer bg-white">
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Кнопка "Предыдущая" -->
+                        <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                            <a class="page-link"
+                               href="{% if current_page > 1 %}/
+                               ?page={{ current_page - 1 }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}#{% endif %}"
+                               tabindex="{% if current_page == 1 %}-1{% endif %}">
+                                <i class="fas fa-chevron-left me-1"></i>Предыдущая
+                            </a>
+                        </li>
+
+                        <!-- Номера страниц -->
+                        {% for page_num in range(1, total_pages + 1) %}
+                            {% if page_num >= current_page - 2 and page_num <= current_page + 2 %}
+                                {% if page_num == current_page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="/?page={{ page_num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            {{ page_num }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Кнопка "Следующая" -->
+                        <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                            <a class="page-link"
+                               href="{% if current_page < total_pages %}/?page={{ current_page + 1 }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}#{% endif %}">
+                                Следующая<i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Информация о странице -->
+                <div class="text-center mt-2">
+                    <small class="text-muted">
+                        Страница {{ current_page }} из {{ total_pages }}
+                        | Показано {{ gauges|length }} из {{ total_count }} приборов
+                        {% if search_query %}
+                        | Поиск: "{{ search_query }}"
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
         {% endif %}
     </div>
 
@@ -295,6 +451,27 @@
                         e.preventDefault();
                     }
                 });
+            });
+
+            // Автофокус на поле поиска
+            const searchInput = document.getElementById('search');
+            if (searchInput) {
+                searchInput.focus();
+                // Выделяем текст при фокусе
+                searchInput.addEventListener('focus', function() {
+                    this.select();
+                });
+            }
+
+            // AJAX поиск (опционально)
+            searchInput.addEventListener('input', function(e) {
+                const searchValue = e.target.value;
+
+                // Можно добавить debounce для AJAX поиска
+                if (searchValue.length >= 3) {
+                    // Здесь можно добавить AJAX запрос для динамического поиска
+                    console.log('Поиск:', searchValue);
+                }
             });
         });
     </script>

@@ -1,3 +1,4 @@
+import math
 from datetime import date
 
 from fastapi import FastAPI, Query, Depends, Request, HTTPException, Form, Cookie
@@ -35,6 +36,15 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
+@app.get('/gauges/search/?gauge_title={gauge_title}')
+async def gauge_by_title(request: Request,
+                         gauge_title: str,
+                         db: Session = Depends(get_db),
+                         ):
+    return templates.TemplateResponse('gauge_search.html', {'request': request,
+                                      'gauges': crud.get_gauge_by_title(db, gauge_title)})
+
+
 @app.get('/gauges')
 def read_all_gauges(db: Session = Depends(get_db)):
     return crud.read_all_gauges(db)
@@ -42,47 +52,47 @@ def read_all_gauges(db: Session = Depends(get_db)):
 
 @app.get('/')
 async def base(request: Request, db: Session = Depends(get_db),
-               user: dict = Depends(auth.require_user)):
+                user: dict = Depends(auth.require_user),
+               search: str | None = None,
+               page: int = Query(1, ge=1, description="Номер страницы")
+               ):
     is_authenticated = True
 
-    gauges = crud.read_all_gauges(db)
+    items_per_page = 10
+    skip = (page - 1) * items_per_page
+
+    if search and search.strip():
+        gauges, total_count = crud.search_gauges_strict(
+            db,
+            search_term=search,
+            skip=skip,
+            limit=items_per_page
+        )
+    else:
+        gauges, total_count = crud.get_gauges_with_pagination(
+            db,
+            skip=skip,
+            limit=items_per_page
+        )
+
+    # Вычисляем общее количество страниц
+    total_pages = math.ceil(total_count / items_per_page) if total_count > 0 else 1
+
     user_full_names = {}
 
     for gauge in gauges:
         if gauge.by_user not in user_full_names:
             user_full_names[gauge.by_user] = crud.get_full_name_by_id(db, gauge.by_user)
     return templates.TemplateResponse('base.html', {'request': request,
+                                                    "search_query": search,
+                                                    "current_page": page,
+                                                    "total_pages": total_pages,
+                                                    "total_count": total_count,
                                                     "is_authenticated": is_authenticated,
                                                     'full_name': user['full_name'],
                                                     'role': user['role'],
                                                     'gauges': gauges,
                                                     'user_names': user_full_names})
-
-
-# @app.get('/error-non-authenticated/', response_class=HTMLResponse)
-# async def error_page(request: Request):
-#     return templates.TemplateResponse(
-#         "error.html",
-#         {
-#             "request": request,
-#             "error_message": "Вы не вошли в учетную запись",
-#             "error_code": 401
-#         },
-#         status_code=401
-#     )
-
-#
-# @app.get('/error-wrong-token/', response_class=HTMLResponse)
-# async def error_wrong_token(request: Request):
-#     return templates.TemplateResponse(
-#         "error.html",
-#         {
-#             "request": request,
-#             "error_message": "Ваша учетная запись не является подлинной, пожалуйста, перезайдите в неё",
-#             "error_code": 401
-#         },
-#         status_code=401
-#     )
 
 
 @app.get("/form/", response_class=HTMLResponse)
@@ -97,8 +107,11 @@ async def delete_form(request: Request,
                       user: dict = Depends(auth.require_master),
                       db: Session = Depends(get_db),
                       ):
+    gauge = crud.read_gauge(db, gauge_id)
+    user_full_name = crud.get_full_name_by_id(db, gauge.by_user)
     return templates.TemplateResponse('gauge.html', {'request': request,
-                                                    'gauge': crud.read_gauge(db, gauge_id)})
+                                                    'gauge': gauge,
+                                                    'full_name': user_full_name})
 
 
 @app.post("/delete-gauge/{gauge_id}")
@@ -108,7 +121,7 @@ async def delete_gauge(request: Request,
         user_role: str = Depends(auth.require_master)
 ):
     crud.delete_gauge(db, gauge_id)
-    return RedirectResponse(url='/')
+    return templates.TemplateResponse('success-delete.html', {'request': request})
 
 
 @app.get('/edit-gauge/{gauge_id}', response_class=HTMLResponse)
@@ -215,22 +228,22 @@ async def deactivate_user(user_id: int,
 
 
 @app.post('/register')
-async def register(full_name: str = Form(...),
+async def register(request: Request,
+                   full_name: str = Form(...),
                    password: str = Form(...),
                    phone_number: str = Form(...),
                    db: Session = Depends(get_db)):
-    crud.register_user(db, full_name, password, phone_number, role='кип')
-    return HTMLResponse("""
-            <h2>Пользователь успешно добавлен!</h2>
-            <a href="/">Вернуться на главную</a>
-            <a href="/users">Список всех сотрудников</a>
-        """)
+    if crud.register_user(db, full_name, password, phone_number, role='кип'):
+        return templates.TemplateResponse('success-user-create.html', {'request': request})
+    return templates.TemplateResponse('register_kip.html', {'request': request,
+                                                            'error': 'Пользователь с таким ФИО уже существует'})
 
 
 @app.get('/users')
 async def read_users(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse('users.html', {'request': request,
                                                      'users': crud.read_all_users(db)})
+
 
 @app.post('/submit-login/')
 async def handle_login(request: Request,
@@ -321,8 +334,5 @@ async def handle_form(
 
 # Страница успеха
 @app.get("/success/", response_class=HTMLResponse)
-async def success_page():
-    return HTMLResponse("""
-        <h2>Датчик успешно добавлен!</h2>
-        <a href="/">Вернуться на главную</a>
-    """)
+async def success_page(request: Request):
+    return templates.TemplateResponse('success-create.html', {'request': request})
