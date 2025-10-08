@@ -86,6 +86,15 @@
     </style>
 </head>
 <body class="bg-light">
+{% if flash_messages %}
+        {% for message in flash_messages %}
+            <div class="alert alert-{{ 'warning' if message.category == 'warning' else 'info' }} alert-dismissible fade show m-3" role="alert">
+                <i class="fas fa-{{ 'exclamation-triangle' if message.category == 'warning' else 'info-circle' }} me-2"></i>
+                {{ message.message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
     <div class="container-fluid py-4">
         {% if is_authenticated %}
         <!-- Карточка пользователя -->
@@ -242,7 +251,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-        <!-- Таблица датчиков -->
         <!-- Таблица датчиков -->
 <div class="row">
     <div class="col-12">

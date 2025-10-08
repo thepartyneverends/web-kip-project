@@ -56,6 +56,16 @@
             color: #0d6efd;
             text-decoration: underline;
         }
+        .search-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .pagination .page-link {
+            border-radius: 5px;
+            margin: 0 2px;
+        }
         @media (max-width: 768px) {
             .table-responsive {
                 font-size: 0.9rem;
@@ -79,11 +89,68 @@
                     </ol>
                 </nav>
 
+                <!-- Поиск по ФИО -->
+                <div class="search-box">
+                    <form method="GET" action="/users" class="row g-3 align-items-center">
+                        <div class="col-md-8">
+                            <label for="search" class="form-label fw-bold">Поиск сотрудника по ФИО</label>
+                            <div class="input-group">
+                                <input type="text"
+                                       class="form-control form-control-lg"
+                                       id="search"
+                                       name="search"
+                                       value="{{ search_query or '' }}"
+                                       placeholder="Введите ФИО сотрудника для поиска..."
+                                       style="font-size: 1.1rem;">
+                                <button class="btn btn-primary btn-lg" type="submit">
+                                    <i class="fas fa-search me-2"></i>Найти
+                                </button>
+                                {% if search_query %}
+                                <a href="/users" class="btn btn-outline-secondary btn-lg" title="Сбросить поиск">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                {% if search_query %}
+                                <i class="fas fa-info-circle me-1"></i>Показаны только найденные сотрудники
+                                {% else %}
+                                <i class="fas fa-info-circle me-1"></i>Введите ФИО для поиска конкретных сотрудников
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            {% if search_query %}
+                            <div class="alert alert-info mb-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-filter me-2"></i>
+                                        <strong>Активный поиск:</strong> "{{ search_query }}"
+                                    </div>
+                                    <a href="/users" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-times me-1"></i>Сбросить
+                                    </a>
+                                </div>
+                                <hr class="my-2">
+                                <div class="small">
+                                    Найдено сотрудников: <strong>{{ total_count }}</strong>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-container shadow">
                     <!-- Заголовок с увеличенными отступами -->
                     <div class="card-header bg-white d-flex justify-content-between align-items-center table-header">
                         <h5 class="card-title mb-0" style="font-size: 1.3rem;">
-                            <i class="fas fa-users me-2 text-primary"></i>Список сотрудников
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            {% if search_query %}
+                            Результаты поиска
+                            {% else %}
+                            Список сотрудников
+                            {% endif %}
                         </h5>
                         <div class="btn-group">
                             <a href="/" class="btn btn-outline-secondary btn-sm">
@@ -119,7 +186,13 @@
                                                     {{ user.full_name.split(' ')[0][0] }}{{ user.full_name.split(' ')[1][0] if user.full_name.split(' ')|length > 1 else '' }}
                                                 </div>
                                                 <div>
-                                                    <div class="fw-bold">{{ user.full_name }}</div>
+                                                    <div class="fw-bold">
+                                                        {% if search_query %}
+                                                            {{ user.full_name|replace(search_query, '<mark>' ~ search_query ~ '</mark>')|safe }}
+                                                        {% else %}
+                                                            {{ user.full_name }}
+                                                        {% endif %}
+                                                    </div>
                                                     <small class="text-muted">ID: {{ user.id }}</small>
                                                 </div>
                                             </div>
@@ -153,7 +226,7 @@
                                                 </span>
                                             {% else %}
                                                 <span class="badge bg-danger badge-role">
-                                                    <i class="fas fa-times-circle me-1"></i>Нет
+                                                    <i class="fas fa-times-circle me-1"></i>Неактивен
                                                 </span>
                                             {% endif %}
                                         </td>
@@ -170,11 +243,19 @@
                                 {% else %}
                                     <tr>
                                         <td colspan="6" class="text-center py-5">
+                                            {% if search_query %}
+                                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted" style="font-size: 1.1rem;">Сотрудники с ФИО "{{ search_query }}" не найдены</p>
+                                            <a href="/users" class="btn btn-primary">
+                                                <i class="fas fa-arrow-left me-2"></i>Вернуться ко всем сотрудникам
+                                            </a>
+                                            {% else %}
                                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                             <p class="text-muted" style="font-size: 1.1rem;">Нет активных сотрудников</p>
                                             <a href="/register-kip" class="btn btn-primary">
                                                 <i class="fas fa-user-plus me-2"></i>Добавить первого сотрудника
                                             </a>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -183,11 +264,66 @@
                         </div>
                     </div>
 
+                    <!-- Пагинация -->
+                    {% if total_pages > 1 %}
+                    <div class="card-footer bg-white">
+                        <nav aria-label="Навигация по страницам">
+                            <ul class="pagination justify-content-center mb-0">
+                                <!-- Кнопка "Предыдущая" -->
+                                <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link"
+                                       href="{% if current_page > 1 %}/users?page={{ current_page - 1 }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}#{% endif %}"
+                                       tabindex="{% if current_page == 1 %}-1{% endif %}">
+                                        <i class="fas fa-chevron-left me-1"></i>Предыдущая
+                                    </a>
+                                </li>
+
+                                <!-- Номера страниц -->
+                                {% for page_num in range(1, total_pages + 1) %}
+                                    {% if page_num >= current_page - 2 and page_num <= current_page + 2 %}
+                                        {% if page_num == current_page %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link"
+                                                   href="/users?page={{ page_num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                    {{ page_num }}
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                <!-- Кнопка "Следующая" -->
+                                <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link"
+                                       href="{% if current_page < total_pages %}/users?page={{ current_page + 1 }}{% if search_query %}&search={{ search_query }}{% endif %}{% else %}#{% endif %}">
+                                        Следующая<i class="fas fa-chevron-right ms-1"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <!-- Информация о странице -->
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                Страница {{ current_page }} из {{ total_pages }}
+                                | Показано {{ users|selectattr('active')|list|length }} из {{ total_count }} сотрудников
+                                {% if search_query %}
+                                | Поиск: "{{ search_query }}"
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Статистика -->
                     <div class="card-footer bg-light">
                         <div class="row text-center">
                             <div class="col-md-3">
-                                <small class="text-muted">Всего сотрудников: <strong>{{ users|length }}</strong></small>
+                                <small class="text-muted">Всего сотрудников: <strong>{{ total_count }}</strong></small>
                             </div>
                             <div class="col-md-3">
                                 <small class="text-muted">Активных: <strong>{{ users|selectattr('active')|list|length }}</strong></small>
@@ -234,7 +370,13 @@
                                                 {{ user.full_name.split(' ')[0][0] }}{{ user.full_name.split(' ')[1][0] if user.full_name.split(' ')|length > 1 else '' }}
                                             </div>
                                             <div>
-                                                <div class="fw-bold text-muted">{{ user.full_name }}</div>
+                                                <div class="fw-bold text-muted">
+                                                    {% if search_query %}
+                                                        {{ user.full_name|replace(search_query, '<mark>' ~ search_query ~ '</mark>')|safe }}
+                                                    {% else %}
+                                                        {{ user.full_name }}
+                                                    {% endif %}
+                                                </div>
                                                 <small class="text-muted">ID: {{ user.id }}</small>
                                             </div>
                                         </div>
@@ -282,6 +424,14 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        mark {
+            background-color: #fff3cd;
+            padding: 0.1em 0.2em;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
     <script>
         // Подсветка строки при наведении
         document.addEventListener('DOMContentLoaded', function() {
@@ -295,25 +445,11 @@
                 });
             });
 
-            // Подтверждение действий
-            const actionButtons = document.querySelectorAll('a[href*="/deactivate-user/"], a[href*="/activate-user/"], a[href*="/delete-user/"]');
-            actionButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    let action = '';
-                    if (this.href.includes('/deactivate-user/')) {
-                        action = 'деактивировать';
-                    } else if (this.href.includes('/activate-user/')) {
-                        action = 'активировать';
-                    } else {
-                        action = 'удалить';
-                    }
-
-                    const userName = this.closest('tr').querySelector('.fw-bold').textContent;
-                    if (!confirm(`Вы уверены, что хотите ${action} сотрудника ${userName}?`)) {
-                        e.preventDefault();
-                    }
-                });
-            });
+            // Автофокус на поле поиска
+            const searchInput = document.getElementById('search');
+            if (searchInput) {
+                searchInput.focus();
+            }
         });
     </script>
 </body>

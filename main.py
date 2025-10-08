@@ -1,5 +1,6 @@
 import math
 from datetime import date
+from urllib.parse import quote
 
 from fastapi import FastAPI, Query, Depends, Request, HTTPException, Form, Cookie
 from pydantic import BaseModel
@@ -24,11 +25,16 @@ app.mount('/static', StaticFiles(directory='static'), name='static')
 
 templates = Jinja2Templates(directory='static/templates')
 
+flash_messages = {}
+
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code in [401, 403]:
-        return RedirectResponse(url='/form-login', status_code=302)
+        # Кодируем сообщение для передачи в URL
+        message = quote("Необходима авторизация, либо Вы заблокированы, либо у вашей должности нет доступа к этой странице")
+        return RedirectResponse(url=f'/form-login?auth_message={message}', status_code=302)
 
     return HTMLResponse(
         content=f'<h1>Ошибка {exc.status_code} </h1><p>{exc.detail}</p>',
@@ -206,9 +212,11 @@ async def edit_kip(request: Request,
                    user_id: int,
                    db: Session = Depends(get_db),
                    user: dict = Depends(auth.require_master)):
-    user = crud.read_user(db, user_id)
+    user_to_edit = crud.read_user(db, user_id)
+    is_editing_self = user_to_edit.id == user['id']
     return templates.TemplateResponse('user_update.html', {'request': request,
-                                                           'user': user})
+                                                           'edit_self': is_editing_self,
+                                                           'user': user_to_edit})
 
 
 @app.post('/user-update/{user_id}')
@@ -220,6 +228,7 @@ async def deactivate_user(user_id: int,
                         active: bool = Form(...),
                         phone_number: str = Form(...)
                           ):
+
     user_update = schemas.UserUpdate(full_name=full_name,
                                      active=active,
                                      phone_number=phone_number)
@@ -240,9 +249,33 @@ async def register(request: Request,
 
 
 @app.get('/users')
-async def read_users(request: Request, db: Session = Depends(get_db)):
+async def read_users(request: Request,
+                     user: dict = Depends(auth.require_master),
+                     search: str | None = None,
+                    page: int = Query(1, ge=1, description="Номер страницы"),
+                     db: Session = Depends(get_db)):
+    items_per_page = 10
+    skip = (page - 1) * items_per_page
+
+    # Получаем пользователей с пагинацией и поиском
+    users, total_count = crud.get_users_with_pagination(
+        db,
+        search=search,
+        skip=skip,
+        limit=items_per_page
+    )
+
+    # Вычисляем общее количество страниц
+    total_pages = math.ceil(total_count / items_per_page) if total_count > 0 else 1
+
+
     return templates.TemplateResponse('users.html', {'request': request,
-                                                     'users': crud.read_all_users(db)})
+                                                     'search_query': search,
+                                                     'users': users,
+                                                     'current_page': page,
+                                                     "total_pages": total_pages,
+                                                     "total_count": total_count,
+                                                     })
 
 
 @app.post('/submit-login/')

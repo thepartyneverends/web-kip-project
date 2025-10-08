@@ -35,5 +35,26 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authMessage = urlParams.get('auth_message');
+
+    if (authMessage) {
+        // Создаем Bootstrap alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${decodeURIComponent(authMessage)}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.insertBefore(alertDiv, document.body.firstChild);
+
+        // Или обычный alert
+        // alert(decodeURIComponent(authMessage));
+    }
+});
+</script>
 </body>
 </html>

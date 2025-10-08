@@ -162,3 +162,41 @@ def search_gauges_strict(
         print(f"🔍 - {gauge.title}")
 
     return gauges, total
+
+
+def get_users_with_pagination(
+        db: Session,
+        search: str | None = None,
+        skip: int = 0,
+        limit: int = 10
+) -> Tuple[List[models.User], int]:
+    """
+    Получение пользователей с пагинацией и поиском
+    """
+    query = db.query(models.User)
+
+    # Поиск по ФИО
+    if search and search.strip():
+        search_term = search.strip()
+        query = query.filter(models.User.full_name.ilike(f"%{search_term}%"))
+
+    # Получаем общее количество для пагинации
+    total = query.count()
+
+    # Применяем пагинацию
+    users = query.offset(skip).limit(limit).all()
+
+    return users, total
+
+
+def search_users_by_name(db: Session, name: str) -> List[models.User]:
+    """
+    Поиск пользователей по ФИО
+    """
+    if not name or not name.strip():
+        return []
+
+    search_term = name.strip()
+    return db.query(models.User) \
+        .filter(models.User.full_name.ilike(f"%{search_term}%")) \
+        .all()
