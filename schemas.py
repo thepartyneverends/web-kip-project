@@ -3,7 +3,7 @@ from datetime import date
 
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class Role(str, Enum):
@@ -51,6 +51,7 @@ class UserBase(BaseModel):
     role: Role = str
     active: bool
     phone_number: str
+    email: EmailStr
 
 
 class UserLoginSchema(UserBase):
@@ -73,3 +74,4 @@ class UserUpdate(BaseModel):
     role: Role = str
     active: bool
     phone_number: str
+    email: EmailStr

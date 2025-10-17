@@ -39,6 +39,7 @@ class User(Base):
     role: str = Column(String(20), nullable=False, default='kip')
     active: bool = Column(Boolean, default=True)
     phone_number: str = Column(String(20))
+    email: str = Column(String(50), unique=True, index=True)
     gauges = relationship('Gauge', back_populates='users')
 
 

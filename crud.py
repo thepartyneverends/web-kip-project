@@ -59,7 +59,7 @@ def update_gauge(db: Session, gauge_id: int, gauge_update: schemas.GaugeUpdate):
     return db_gauge
 
 
-def register_user(db: Session, full_name: str, password: str, phone_number: str, role: str):
+def register_user(db: Session, full_name: str, password: str, phone_number: str, email: str, role: str):
     existing_user = get_user_by_name(db, full_name)
     if existing_user:
         return None
@@ -68,6 +68,7 @@ def register_user(db: Session, full_name: str, password: str, phone_number: str,
         full_name=full_name,
         password=hashed_password,
         phone_number=phone_number,
+        email=email,
         role=role,
     )
     db.add(db_user)

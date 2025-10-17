@@ -53,18 +53,12 @@
 </style>
 <body class="bg-light">
     <div class="container py-4">
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-1"></i>Главная</a></li>
-                <li class="breadcrumb-item active">Добавить слесаря КИПиА</li>
-            </ol>
-        </nav>
 
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="card form-card">
                     <div class="card-header form-header text-white py-3">
-                        <h3 class="card-title mb-0"><i class="fas fa-plus-circle me-2"></i>Добавление нового сотрудника</h3>
+                        <h3 class="card-title mb-0"><i class="fas fa-plus-circle me-2"></i>Регистрация</h3>
                     </div>
                     <div class="card-body p-4">
                         <!-- Блок для отображения ошибок -->
@@ -117,16 +111,26 @@
                                                required
                                                placeholder="+7 (XXX) XXX-XX-XX">
                                     </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label required-label">Электронная почта</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="email"
+                                               name="email"
+                                               value="{{ form_data.email if form_data else '' }}"
+                                               required
+                                               placeholder="ivanivanov@yandex.ru">
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="row mt-4">
                                 <div class="col-12 d-flex justify-content-between">
-                                    <a href="/users" class="btn btn-secondary btn-lg">
-                                        <i class="fas fa-arrow-left me-2"></i>Назад к списку
+                                    <a href="/form-login" class="btn btn-secondary btn-lg">
+                                        <i class="fas fa-arrow-left me-2"></i>Назад к авторизации
                                     </a>
                                     <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-save me-2"></i>Добавить сотрудника
+                                        <i class="fas fa-save me-2"></i>Зарегистрироваться
                                     </button>
                                 </div>
                             </div>

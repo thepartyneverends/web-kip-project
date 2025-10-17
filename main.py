@@ -33,7 +33,7 @@ flash_messages = {}
 async def http_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code in [401, 403]:
         # Кодируем сообщение для передачи в URL
-        message = quote("Необходима авторизация, либо Вы заблокированы, либо у вашей должности нет доступа к этой странице")
+        message = quote("Необходима авторизация")
         return RedirectResponse(url=f'/form-login?auth_message={message}', status_code=302)
 
     return HTMLResponse(
@@ -202,8 +202,7 @@ async def logout():
 
 
 @app.get('/register-kip')
-async def register_new_kip(request: Request,
-                           user: dict = Depends(auth.require_master)):
+async def register_new_kip(request: Request):
     return templates.TemplateResponse('register_kip.html', {'request': request})
 
 
@@ -241,8 +240,9 @@ async def register(request: Request,
                    full_name: str = Form(...),
                    password: str = Form(...),
                    phone_number: str = Form(...),
+                   email: str = Form(...),
                    db: Session = Depends(get_db)):
-    if crud.register_user(db, full_name, password, phone_number, role='кип'):
+    if crud.register_user(db, full_name, password, phone_number, email, role='пользователь'):
         return templates.TemplateResponse('success-user-create.html', {'request': request})
     return templates.TemplateResponse('register_kip.html', {'request': request,
                                                             'error': 'Пользователь с таким ФИО уже существует'})
